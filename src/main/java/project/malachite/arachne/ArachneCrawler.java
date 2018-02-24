@@ -68,8 +68,7 @@ public abstract class ArachneCrawler extends Thread {
                         String jsonResult = processResult(doc);
                     }
                     
-                    
-                    //controller.sendResult(doc.);
+                    controller.sendResult(jsonResult);
                     
                 } catch (IOException e) {
                     System.out.println("Thread "+threadName+" failed to reach "+url);

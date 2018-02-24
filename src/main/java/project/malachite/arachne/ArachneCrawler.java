@@ -64,8 +64,9 @@ public abstract class ArachneCrawler extends Thread {
                     
                     Matcher shouldProcess = Pattern.compile(shouldProcessRegex).matcher(url);
                     
+                    String jsonResult = null;
                     if (shouldProcess.find()) {
-                        String jsonResult = processResult(doc);
+                        jsonResult = processResult(doc);
                     }
                     
                     controller.sendResult(jsonResult);

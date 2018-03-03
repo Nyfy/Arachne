@@ -1,22 +1,51 @@
 package project.malachite.arachne;
 
-public class ArachnePost {
+public class Post {
     String title;
     String price;
     String description;
-    String region;
     String address;
     String visits;
+    String url;
+    String foundTime;
+    String category;
     
-    public ArachnePost(String title, String price, String description, String region, String address, String visits) {
+    public Post(String title, String price, String description, String address, 
+            String visits, String url, String foundTime, String category) {
         this.title = title;
         this.price = price;
         this.description = description;
-        this.region = region;
         this.address = address;
         this.visits = visits;
+        this.url = url;
+        this.foundTime = foundTime;
+        this.category = category;
     }
     
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    public String getFoundTime() {
+        return foundTime;
+    }
+
+    public void setFoundTime(String foundTime) {
+        this.foundTime = foundTime;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
     public String getTitle() {
         return title;
     }
@@ -39,14 +68,6 @@ public class ArachnePost {
     
     public void setDescription(String description) {
         this.description = description;
-    }
-    
-    public String getRegion() {
-        return region;
-    }
-    
-    public void setRegion(String region) {
-        this.region = region;
     }
     
     public String getAddress() {

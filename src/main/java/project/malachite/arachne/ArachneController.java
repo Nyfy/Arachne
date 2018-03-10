@@ -52,6 +52,7 @@ public class ArachneController {
     }
     
     public synchronized void sendResult(String result, String topic) {
-        producer.send(new ProducerRecord<String, String>(topic,result));
+        //producer.send(new ProducerRecord<String, String>(topic,result));
+        System.out.println(result);
     }
 }

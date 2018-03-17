@@ -10,6 +10,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.interactions.Actions;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -18,9 +19,9 @@ public class Seedling {
     private List<Seed> seeds = new ArrayList<Seed>();
     
     private static String CATEGORY = "Category";
-    
     private static String MONITOR = "Monitor";
-    
+    private static String FOUNDDT = "FoundDT";
+    private static String URL = "URL";
     private static String BRAND = "Brand";
     private static String PRICE = "Price";
     private static String MODEL = "ModelNumber";
@@ -52,10 +53,11 @@ public class Seedling {
     
     private void createNeweggMonitorSeed() {
         List<String> neweggMonitorSeeds = new ArrayList<String>();
-        neweggMonitorSeeds.add("https://www.newegg.ca/LCD-LED-Monitors/SubCategory/ID-20");
+        for (int i = 0; i < 50; i++) {
+            neweggMonitorSeeds.add("https://www.newegg.ca/LCD-LED-Monitors/SubCategory/ID-20/Page-"+Integer.toString(i)+"?order=BESTMATCH&PageSize=96");
+        }
         
-        List<String> neweggMonitorVisit = new ArrayList<String>();
-        neweggMonitorVisit.add("\\/LCD-LED-Monitors\\/SubCategory\\/ID-20\\/Page-");
+        String neweggMonitorVisit = "\\/LCD-LED-Monitors\\/SubCategory\\/ID-20\\/Page-";
         
         String neweggMonitorsProcess = "\\/Product\\/Product.aspx\\?Item=";
         String neweggMonitorsTopic = "Monitors-Raw";
@@ -74,8 +76,12 @@ public class Seedling {
                     Map<String,String> result = new HashMap<String,String>();
                     ObjectMapper objectMapper = new ObjectMapper();
                     
-                    driver.findElement(By.id("Details_Tab")).click();
+                    WebElement details = driver.findElement(By.id("Details_Tab"));
+                    Actions actions = new Actions(driver);
+                    actions.moveToElement(details).click().perform();
                     
+                    result.put(URL, driver.getCurrentUrl());
+                    result.put(FOUNDDT, Long.toString(System.currentTimeMillis()));
                     result.put(CATEGORY, MONITOR);
                     try {
                         result.put(PRICE, driver.findElement(By.className("price-current")).getText());

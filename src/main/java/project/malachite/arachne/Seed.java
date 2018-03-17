@@ -1,16 +1,17 @@
 package project.malachite.arachne;
 
+import java.util.ArrayList;
 import java.util.List;
 import org.openqa.selenium.WebDriver;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 public class Seed {
-    private final List<String> shouldVisitRegex;
+    private final String shouldVisitRegex;
     private final String shouldProcessRegex;
     private final String topic;
     private final List<String> seedUrls;
     
-    public Seed(List<String> seedUrls, List<String> shouldVisitRegex, String shouldProcessRegex, String topic) {
+    public Seed(List<String> seedUrls, String shouldVisitRegex, String shouldProcessRegex, String topic) {
         this.seedUrls = seedUrls;
         this.shouldVisitRegex = shouldVisitRegex;
         this.topic = topic;
@@ -25,7 +26,7 @@ public class Seed {
         return shouldProcessRegex;
     }
     
-    public List<String> getShouldVisitRegex() {
+    public String getShouldVisitRegex() {
         return shouldVisitRegex;
     }
     

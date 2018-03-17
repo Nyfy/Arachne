@@ -8,11 +8,13 @@ import java.util.Properties;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.log4j.Logger;
 
 public class ArachneController {
-    private static String BOOTSTRAP_SERVER = "localhost:9092";
+    private static String BOOTSTRAP_SERVER = "192.168.0.20:9092";
     private static int THREAD_COUNT = 1;
     
+    private static Logger logger = Logger.getLogger(ArachneController.class);
     private KafkaProducer<String, String> producer;
     
     public static void main(String[] args) throws IOException {
@@ -25,8 +27,11 @@ public class ArachneController {
         producerProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVER);
         producerProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
         producerProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
+        producerProps.put(ProducerConfig.ACKS_CONFIG, "1");
         
         producer = new KafkaProducer<String, String>(producerProps);
+        
+        logger.info("Initialized Producer sending to "+BOOTSTRAP_SERVER);
     }
     
     protected void run() {
@@ -49,10 +54,12 @@ public class ArachneController {
         for (ArachneCrawler crawler : crawlers) {
             crawler.start();
         }
+        
+        logger.info("Initialized and started "+THREAD_COUNT+" crawlers.");
     }
     
-    public synchronized void sendResult(String result, String topic) {
+    public void sendResult(String result, String topic) {
         //producer.send(new ProducerRecord<String, String>(topic,result));
-        System.out.println(result);
+        logger.info("Sent \""+result+"\" to "+topic);
     }
 }

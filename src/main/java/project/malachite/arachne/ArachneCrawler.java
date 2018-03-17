@@ -8,6 +8,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -25,9 +27,10 @@ public class ArachneCrawler extends Thread {
     private List<Seed> seeds = new ArrayList<Seed>();
     private List<String> pagesToVisit;
     private Set<String> pagesToProcess;
-    private Set<String> pagesVisited;
+    private Set<String> pagesProcessed;
     
     private WebDriver driver;
+    private static Logger logger = Logger.getLogger(ArachneCrawler.class);
     
     public ArachneCrawler(ArachneController controller) {
         this.controller = controller;
@@ -38,7 +41,7 @@ public class ArachneCrawler extends Thread {
     }
     
     public void run() {
-        pagesVisited = new TreeSet<String>();
+        pagesProcessed = new TreeSet<String>();
         initializeWebDriver();
         
         while (true) {
@@ -48,16 +51,20 @@ public class ArachneCrawler extends Thread {
                 
                 for (String url : currentSeed.getSeedUrls()) {
                     pagesToVisit.add(url);
+                    logger.info("Added "+url+" to pagesToVisit");
                 }
                 
                 while (CollectionUtils.isNotEmpty(pagesToVisit)) {
-                    String url = pagesToVisit.remove(0);
-                    
-                    if (!pagesVisited.contains(url)) {
+                    try {
+                        String url = pagesToVisit.remove(0);
+                        logger.info("Starting processing for "+url);
+                        
                         driver.get(url);
                         processNewLinks(currentSeed);
+                        processResults(currentSeed);
+                    } catch (Exception e) {
+                        logger.error(e.getLocalizedMessage());
                     }
-                    processResults(currentSeed);
                 }
             }
         }
@@ -76,38 +83,54 @@ public class ArachneCrawler extends Thread {
         TreeSet<String> newUrls = new TreeSet<String>();
         
         for (WebElement newLink : newLinks) {
-            if (newLink.getAttribute("href") != null) {
-                newUrls.add(newLink.getAttribute("href"));
+            String link = newLink.getAttribute("href");
+            if (link != null) {
+                newUrls.add(link);
             }
         }
         
+        logger.info("Found "+newUrls.size()+" new links at "+driver.getCurrentUrl());
+        
         for (String newUrl : newUrls) {
             if (newUrl != null) {
-                for (String shouldVisit : currentSeed.getShouldVisitRegex()) {
-                    Matcher visit = Pattern.compile(shouldVisit).matcher(newUrl);
-                    if (visit.find()) {
-                        pagesToVisit.add(newUrl);
-                    }
+                Matcher visit = Pattern.compile(currentSeed.getShouldVisitRegex()).matcher(newUrl);
+                if (visit.find()) {
+                    pagesToVisit.add(newUrl);
                 }
+                
                 Matcher process = Pattern.compile(currentSeed.getShouldProcessRegex()).matcher(newUrl);
-                if (process.find()) {
+                if (process.find() && notProcessed(newUrl)) {
                     pagesToProcess.add(newUrl);
+                    pagesProcessed.add(newUrl);
                 }
             }
         }
     }
     
-    private void processResults(Seed currentSeed) {
+    private void processResults(Seed currentSeed) throws Exception {
         for (String page : pagesToProcess) {
-            driver.get(page);
             try {
+                driver.get(page);
+                logger.info("Starting to scrape "+page);
+                
                 String result = currentSeed.processResult(driver);
                 if (result != null) {
                     controller.sendResult(result, currentSeed.getTopic());
+                } else {
+                    logger.info("Seed returned null result (Probably invalid category)");
                 }
             } catch (Exception e) {
-                e.getLocalizedMessage();
+                logger.error(e.getLocalizedMessage());
             }
         }
+    }
+    
+    private boolean notProcessed(String newUrl) {
+        for (String url : pagesProcessed) {
+            if (StringUtils.contains(newUrl, url) ) {
+                return false;
+            }
+        }
+        return true;
     }
 }

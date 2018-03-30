@@ -1,4 +1,4 @@
-package project.malachite.arachne;
+package crawler;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,6 +17,8 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+
+import seed.Seed;
 
 public class ArachneCrawler extends Thread {
     private static String DRIVER_PATH = "/home/marc/chromedriver";

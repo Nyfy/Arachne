@@ -1,21 +1,28 @@
-package project.malachite.arachne;
+package crawler;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.log4j.Logger;
 
+import constant.Fields;
+import constant.KafkaConstants;
+import seed.NeweggSeed;
+import seed.Seed;
+
 public class ArachneController {
-    private static String BOOTSTRAP_SERVER = "192.168.0.20:9092";
     private static int THREAD_COUNT = 1;
     
     private static Logger logger = Logger.getLogger(ArachneController.class);
     private KafkaProducer<String, String> producer;
+    
+    private List<Seed> seeds = new ArrayList<Seed>();
     
     public static void main(String[] args) throws IOException {
         ArachneController controller = new ArachneController();
@@ -24,14 +31,20 @@ public class ArachneController {
     
     public ArachneController() {
         Properties producerProps = new Properties();
-        producerProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVER);
+        producerProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, KafkaConstants.BOOTSTRAP_SERVER);
         producerProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
         producerProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
         producerProps.put(ProducerConfig.ACKS_CONFIG, "1");
         
+        initializeSeeds();
+        
         producer = new KafkaProducer<String, String>(producerProps);
         
-        logger.info("Initialized Producer sending to "+BOOTSTRAP_SERVER);
+        logger.info("Initialized Producer sending to "+KafkaConstants.BOOTSTRAP_SERVER);
+    }
+    
+    private void initializeSeeds() {
+        seeds.add(new NeweggSeed());
     }
     
     protected void run() {
@@ -41,13 +54,9 @@ public class ArachneController {
             crawlers.add(new ArachneCrawler(this));
         }
         
-        Seedling seedling = new Seedling();
-        
-        while (seedling.hasAvailableSeed()) {
-            for (ArachneCrawler crawler : crawlers) {
-                if (seedling.hasAvailableSeed()) {
-                    crawler.addSeed(seedling.getNextSeed());
-                }
+        for (ArachneCrawler crawler : crawlers) {
+            if (CollectionUtils.isNotEmpty(seeds)) {
+                crawler.addSeed(seeds.remove(0));
             }
         }
         
@@ -58,8 +67,8 @@ public class ArachneController {
         logger.info("Initialized and started "+THREAD_COUNT+" crawlers.");
     }
     
-    public void sendResult(String result, String topic) {
-        //producer.send(new ProducerRecord<String, String>(topic,result));
+    public synchronized void sendResult(String result, String topic) {
+        producer.send(new ProducerRecord<String, String>(topic,result));
         logger.info("Sent \""+result+"\" to "+topic);
     }
 }

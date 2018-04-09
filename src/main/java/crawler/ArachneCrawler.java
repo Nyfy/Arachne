@@ -15,6 +15,8 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
@@ -28,10 +30,14 @@ public class ArachneCrawler extends Thread {
     
     private List<Seed> seeds = new ArrayList<Seed>();
     private List<String> pagesToVisit;
-    private Set<String> pagesToProcess;
-    private Set<String> pagesProcessed;
+    private List<String> pagesToProcess;
+    private List<String> pagesProcessed;
+    
+    private long startTime;
     
     private WebDriver driver;
+    private WebDriverWait wait;
+    
     private static Logger logger = Logger.getLogger(ArachneCrawler.class);
     
     public ArachneCrawler(ArachneController controller) {
@@ -43,13 +49,14 @@ public class ArachneCrawler extends Thread {
     }
     
     public void run() {
-        pagesProcessed = new TreeSet<String>();
+        pagesProcessed = new ArrayList<String>();
         initializeWebDriver();
         
         while (true) {
+            startTime = System.currentTimeMillis();
             for (Seed currentSeed : seeds) {
                 pagesToVisit = new ArrayList<String>();
-                pagesToProcess = new TreeSet<String>();
+                pagesToProcess = new ArrayList<String>();
                 
                 for (String url : currentSeed.getSeedUrls()) {
                     pagesToVisit.add(url);
@@ -60,14 +67,21 @@ public class ArachneCrawler extends Thread {
                     try {
                         String url = pagesToVisit.remove(0);
                         logger.info("Starting processing for "+url);
-                        
                         driver.get(url);
+                        
+                        
                         processNewLinks(currentSeed);
                         processResults(currentSeed);
                     } catch (Exception e) {
                         logger.error(e.getLocalizedMessage());
                     }
                 }
+            }
+            logger.info("Completed all seeds. Elapsed time: "+(System.currentTimeMillis()-startTime)+" ms");
+            try {
+                Thread.sleep(3600000L);
+            } catch (InterruptedException e) {
+                logger.error(e.getLocalizedMessage());
             }
         }
     }
@@ -78,10 +92,11 @@ public class ArachneCrawler extends Thread {
         options.addArguments("headless");
         
         driver = new ChromeDriver(options);
+        wait = new WebDriverWait(driver, 30);
     }
     
     private void processNewLinks(Seed currentSeed) {
-        List<WebElement> newLinks = driver.findElements(By.tagName("a"));
+        List<WebElement> newLinks = wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.tagName("a")));
         TreeSet<String> newUrls = new TreeSet<String>();
         
         for (WebElement newLink : newLinks) {
@@ -107,15 +122,17 @@ public class ArachneCrawler extends Thread {
                 }
             }
         }
+        
+        logger.info("Finished sorting all new links.");
     }
     
     private void processResults(Seed currentSeed) throws Exception {
         for (String page : pagesToProcess) {
             try {
                 driver.get(page);
-                logger.info("Starting to scrape "+page);
+                logger.info("Starting to process "+page);
                 
-                String result = currentSeed.processResult(driver);
+                String result = currentSeed.processResult(driver, wait);
                 if (result != null) {
                     controller.sendResult(result, currentSeed.getTopic());
                 } else {

@@ -1,2 +1,4 @@
 crawler/ArachneController.class
+seeds/Seed.class
+seeds/NeweggMonitorSeed.class
 crawler/ArachneCrawler.class

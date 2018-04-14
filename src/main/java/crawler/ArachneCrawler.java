@@ -109,9 +109,7 @@ public class ArachneCrawler extends Thread {
             
             Matcher shouldProcess = Pattern.compile(currentSeed.getShouldProcessRegex()).matcher(newUrl);
             boolean processMatches = shouldProcess.matches();
-            if (processMatches && singlePass && notProcessed(newUrl)) {
-                pagesToProcess.add(shouldProcess.group(1));
-            } else if (processMatches) {
+            if (processMatches && (!singlePass || (singlePass && notProcessed(newUrl)))) {
                 pagesToProcess.add(shouldProcess.group(1));
             }
         }
@@ -133,7 +131,9 @@ public class ArachneCrawler extends Thread {
                 } else {
                     logger.info("Seed returned null result (Probably invalid category).");
                 }
-                pagesProcessed.add(page);
+                if (singlePass) {
+                    pagesProcessed.add(page);
+                }
             } catch (Exception e) {
                 logger.error("Unexpected error occured while processing results.",e);
             } 

@@ -26,8 +26,9 @@ public class ArachneController {
     private static String SEED_SEPARATOR = ",";
     
     private static Logger logger = Logger.getLogger(ArachneController.class);
-    private KafkaProducer<String, String> producer;
-    private List<Seed> seeds = new ArrayList<Seed>();
+    private static KafkaProducer<String, String> producer;
+    private static List<Seed> seeds = new ArrayList<Seed>();
+    private static List<ArachneCrawler> crawlers;
     
     public ArachneController() {
         initializeProperties();
@@ -38,38 +39,51 @@ public class ArachneController {
     public static void main(String[] args) throws IOException {
         ArachneController controller = new ArachneController();
         controller.run();
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            public void run() {
+                producer.close();
+            }
+        });
     }
     
     private void run() {
-        List<ArachneCrawler> crawlers = new ArrayList<ArachneCrawler>();
-        int threadCount = Integer.parseInt(arachneProps.getProperty(THREAD_COUNT));
-        
-        for (int i = 0; i < threadCount; i++) {
-            crawlers.add(new ArachneCrawler(this));
-        }
-        while (CollectionUtils.isNotEmpty(seeds)){
-            for (ArachneCrawler crawler : crawlers) {
-                if (CollectionUtils.isNotEmpty(seeds)) {
-                    crawler.addSeed(seeds.remove(0));
+        crawlers = new ArrayList<ArachneCrawler>();
+        try {
+            int threadCount = Integer.parseInt(arachneProps.getProperty(THREAD_COUNT));
+            
+            for (int i = 0; i < threadCount; i++) {
+                crawlers.add(new ArachneCrawler(this, true));
+            }
+            while (CollectionUtils.isNotEmpty(seeds)){
+                for (ArachneCrawler crawler : crawlers) {
+                    if (CollectionUtils.isNotEmpty(seeds)) {
+                        crawler.addSeed(seeds.remove(0));
+                    }
                 }
             }
+            
+            for (ArachneCrawler crawler : crawlers) {
+                crawler.start();
+            }
+            
+            logger.info("Initialized and started "+threadCount+" crawlers.");
+        } catch (Exception e) {
+            logger.error("An unexpected error occured while running crawlers.",e);
         }
-        
-        for (ArachneCrawler crawler : crawlers) {
-            crawler.start();
-        }
-        
-        logger.info("Initialized and started "+threadCount+" crawlers.");
     }
     
     private void initializeProperties() {
         arachneProps = new Properties();
+        InputStream input;
         try {
-            InputStream input = ArachneController.class.getClassLoader().getResourceAsStream(arachnePropsFile);
+            input = ArachneController.class.getClassLoader().getResourceAsStream(arachnePropsFile);
             arachneProps.load(input);
+            if (input != null) {
+                input.close();
+            }
         } catch (FileNotFoundException e) {
             logger.error("Unable to load arachne properties file.",e);
-        } catch (IOException e) {
+        } catch (Exception e) {
             logger.error("Unexpected error occured while loading arachne properties.", e);;
         }
     }

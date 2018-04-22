@@ -4,11 +4,17 @@ import java.util.List;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
-public class Seed {
+public abstract class Seed {
     private String shouldVisitRegex;
     private String shouldProcessRegex;
     private String topic;
     private List<String> seedUrls;
+    
+    /**
+     * Implement this function for each seed needed. 
+     * The String returned is the value produced to the Kafka topic.
+     */
+    public abstract String processResult(WebDriver driver, WebDriverWait waitShort, WebDriverWait waitLong) throws Exception;
     
     public void setSeedUrls(List<String> seedUrls) {
         this.seedUrls = seedUrls;
@@ -40,10 +46,5 @@ public class Seed {
     
     public String getTopic() {
         return topic;
-    }
-    
-    //Extend to process specific sources
-    public String processResult(WebDriver driver, WebDriverWait waitShort, WebDriverWait waitLong) throws Exception {
-        return null;
     }
 }

@@ -14,7 +14,7 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.log4j.Logger;
 
 import config.KafkaConfig;
-import seeds.*;
+import seed.*;
 
 public class ArachneController {
     private Properties arachneProps;
@@ -49,16 +49,18 @@ public class ArachneController {
     private void run() {
         crawlers = new ArrayList<ArachneCrawler>();
         try {
-            int threadCount = Integer.parseInt(arachneProps.getProperty(THREAD_COUNT));
+            int crawlerCount = Integer.parseInt(arachneProps.getProperty(THREAD_COUNT));
             
-            for (int i = 0; i < threadCount; i++) {
+            for (int i = 0; i < crawlerCount; i++) {
                 crawlers.add(new ArachneCrawler(this, true));
             }
-            while (CollectionUtils.isNotEmpty(seeds)){
-                for (ArachneCrawler crawler : crawlers) {
-                    if (CollectionUtils.isNotEmpty(seeds)) {
-                        crawler.addSeed(seeds.remove(0));
-                    }
+            
+            // Distribute seeds across all the crawlers
+            int index = 0;
+            for (Seed seed : seeds) {
+                crawlers.get(index).addSeed(seed);
+                if (++index > crawlerCount) {
+                    index = 0;
                 }
             }
             
@@ -66,7 +68,7 @@ public class ArachneController {
                 crawler.start();
             }
             
-            logger.info("Initialized and started "+threadCount+" crawlers.");
+            logger.info("Initialized and started "+crawlerCount+" crawlers.");
         } catch (Exception e) {
             logger.error("An unexpected error occured while running crawlers.",e);
         }
@@ -106,6 +108,7 @@ public class ArachneController {
         
         for (String seed : assignedSeeds) {
             try {
+                // Is there a better way to do this dependency injection?
                 seedClass = Class.forName("seeds."+seed);
                 seeds.add((Seed) seedClass.newInstance());
             } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {

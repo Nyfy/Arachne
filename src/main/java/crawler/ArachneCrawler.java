@@ -25,7 +25,7 @@ import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
-import seeds.*;
+import seed.*;
 
 public class ArachneCrawler extends Thread {
     private Properties arachneProps;

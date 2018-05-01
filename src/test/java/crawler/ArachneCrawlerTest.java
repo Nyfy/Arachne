@@ -19,7 +19,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 import crawler.ArachneController;
 import crawler.ArachneCrawler;
-import seeds.Seed;
+import seed.Seed;
 
 class ArachneCrawlerTest {
     

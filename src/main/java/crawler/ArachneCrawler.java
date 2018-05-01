@@ -108,7 +108,6 @@ public class ArachneCrawler extends Thread {
     }
     
     private void processSeed(Seed seed) {
-        int tries = 5;
         while (CollectionUtils.isNotEmpty(pagesToVisit)) {
             try {
                 String url = pagesToVisit.remove(0);
@@ -119,16 +118,12 @@ public class ArachneCrawler extends Thread {
                 processResults(seed);
             } catch (WebDriverException e) {
                 // WebDriver crashed, start a new session
-                if (tries > 0) {
-                    logger.error("WebDriver exception caught, reinitializing.", e);
-                    initializeWebDriver(null);
-                    initializeDriverWaits(null,null);
-                    
-                    tries--;
-                    logger.info("WebDriver reinitialized, "+tries+" tries left.");
-                } else {
-                    return;
-                }
+                logger.error("WebDriver exception caught, reinitializing.", e);
+                
+                initializeWebDriver(null);
+                initializeDriverWaits(null,null);
+                
+                logger.info("WebDriver reinitialized.");
             } catch (Exception e) {
                 logger.error("Unexpected error occured while processing seed.", e);
             }

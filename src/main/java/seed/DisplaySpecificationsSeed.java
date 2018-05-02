@@ -103,7 +103,7 @@ public class DisplaySpecificationsSeed extends Seed {
                         result.put(Fields.HEIGHT_ADJUSTMENT, specValue);
                     }
                 } else if (StringUtils.equalsIgnoreCase(specName, "landscape/portrait pivot")) {
-                    result.put(Fields.PORTRAIT_PIVOT, specValue);
+                    result.put(Fields.PIVOT_ADJUSTMENT, specValue);
                 } else if (StringUtils.equalsIgnoreCase(specName, "left/right swivel")) {
                     result.put(Fields.SWIVEL_ADJUSTMENT, specValue);
                 } else if (StringUtils.equalsIgnoreCase(specName, "forward/backward tilt")) {

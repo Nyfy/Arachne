@@ -1,5 +1,5 @@
-/home/marc/workspace-malachite/arachne/src/main/java/seeds/NeweggMonitorSeed.java
-/home/marc/workspace-malachite/arachne/src/main/java/seeds/Seed.java
-/home/marc/workspace-malachite/arachne/src/main/java/seeds/DisplaySpecificationsSeed.java
-/home/marc/workspace-malachite/arachne/src/main/java/crawler/ArachneCrawler.java
-/home/marc/workspace-malachite/arachne/src/main/java/crawler/ArachneController.java
+/home/marc/workspace-malachite/Arachne/src/main/java/crawler/ArachneCrawler.java
+/home/marc/workspace-malachite/Arachne/src/main/java/crawler/ArachneController.java
+/home/marc/workspace-malachite/Arachne/src/main/java/seed/Seed.java
+/home/marc/workspace-malachite/Arachne/src/main/java/seed/DisplaySpecificationsSeed.java
+/home/marc/workspace-malachite/Arachne/src/main/java/seed/NeweggMonitorSeed.java

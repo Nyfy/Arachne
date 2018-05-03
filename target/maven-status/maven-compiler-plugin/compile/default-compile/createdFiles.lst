@@ -1,6 +1,6 @@
-seeds/DisplaySpecificationsSeed.class
-seeds/Seed.class
-seeds/NeweggMonitorSeed.class
+seed/DisplaySpecificationsSeed.class
+seed/NeweggMonitorSeed.class
+seed/Seed.class
 crawler/ArachneController.class
 crawler/ArachneController$1.class
 crawler/ArachneCrawler.class

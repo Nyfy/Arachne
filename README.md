@@ -4,9 +4,8 @@ myself with core data mining concepts. The idea was to create a generic and conf
 to serve as an independant development base for projects prior to requiring an efficient and specialized Crawler implementation 
 for production.
 
-## Getting Started
-TODO: Add instructions for running the crawler
+## Example
 
-## Configuring the crawler
-TODO: Add configuration details
+## Implementation Notes
+
 
